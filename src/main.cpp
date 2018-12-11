@@ -64,21 +64,6 @@ TestClass::~TestClass()
 
 
 
-void* TestHwMonitor(void*)
-{
-	int runningTime = 360;
-	HwMonitor* mon = HwMonitor::GetInstance();
-	mon->StartHwMonitor();
-
-	while(runningTime)
-	{
-		sleep(1);
-		runningTime--;
-//		DebugMessage("CPU utilization: %Lf [%]", mon->GetCpuUtilization());
-//		DebugMessage("MEM usage: %u [kB]", mon->GetMemUsage());
-	}
-	return 0;
-}
 
 std::unique_ptr<TcpServer> serverX;
 std::unique_ptr<TcpServer> serverY;
