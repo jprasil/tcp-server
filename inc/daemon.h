@@ -41,13 +41,12 @@ private:
 
 	explicit Daemon(){}								//!< Konstruktor
 	int RedirectStandardStreams();					//!< Funkce presmeruje standardni I/O
-//	void SetSignalHendlers();						//!< Setting signal's handlers
 	void PrintProcessInfo(const char* _procName);	//!< Vypise info o procesu
 
 public:
 	Daemon(Daemon&)				= delete;				//!< Odstraneni kopirovaciho konstruktoru
 	void operator=(Daemon&)		= delete;				//!< Odstraneni operatoru =
-	void DaemonStart(/*run_t _func, void*_args=nullptr*/);	//!< Start demona
+	void DaemonStart(const bool _redirectIO);	//!< Start demona
 
 private:
 //	static SignalHandlerManager*	SigHandlerMngr;

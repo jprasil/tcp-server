@@ -126,7 +126,7 @@ void Daemon::InitDaemonSignalHandlers(SignalHandlerManager* _sigMng)
 	\param	_procName	Pojmenovani procesu
 */
 //---------------------------------------------------
-void Daemon::DaemonStart(/*run_t _func, void* _args*/)
+void Daemon::DaemonStart(const bool _redirectIO)
 {
 	pid_t pid, sid;
 
@@ -170,12 +170,15 @@ void Daemon::DaemonStart(/*run_t _func, void* _args*/)
 	}
 
 	// Redirect of standard IO
-/*	if(RedirectStandardStreams() < 0)
+	if(_redirectIO)
 	{
-		// Redirect of IO failure
-		exit(EXIT_FAILURE);
+		if(RedirectStandardStreams() < 0)
+		{
+			// Redirect of IO failure
+			exit(EXIT_FAILURE);
+		}
 	}
-*/
+
 	// Launch functor
 //	void* ret = ((void*)0xFF);
 //	ret = _func(_args);
