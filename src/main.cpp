@@ -2,7 +2,8 @@
 /*
  	\file		main.cpp
 
- 	\brief		Start of the program
+ 	\brief		Application of TCP server which
+ 				react on two commands
 
 	\date		25.10.2018
 	\version	1.0
@@ -12,44 +13,38 @@
 //---------------------------------------------------
 
 #include "tcp_server.h"
-
-#include <cstdlib>
-
-
 #include "daemon.h"
-
-
 #include "hw_monitor.h"
-
 #include "help.h"
 #include "signal_manager.h"
 #include "comm.h"
 
+#include <cstdlib>
 #include <memory>
 #include <cerrno>
 
 
-//#include <unistd.h>
-
-
-
-//std::unique_ptr<TcpServer> server;
 
 //--------------------------------------------------
-
+/*
+	\brief	Callback called when process is terminated
+			successful
+*/
 //--------------------------------------------------
-void ProcessTerminated(void)
+void cbTerminatedSuccessful(void)
 {
 	DebugMessage("Process terminated successful");
 }
 
 //--------------------------------------------------
-
+/*
+	\brief	Application entry point
+*/
 //--------------------------------------------------
-int main() {
-
+int main()
+{
 	// Registered function will be called at normal program termination
-	if(atexit(ProcessTerminated) != 0)
+	if(atexit(cbTerminatedSuccessful) != 0)
 	{
 		DebugMessage("atexit() error");
 	}
@@ -57,7 +52,7 @@ int main() {
 	DebugMessage("Main thread tid: %d", pthread_self());
 
 
-	// Initialize of daemon
+	// Initialize daemon signal handlers
 	Daemon::InitDaemonSignalHandlers(SignalHandlerManager::GetInstance());
 	// Runs the program as daemon
 	Daemon::GetInstance()->DaemonStart(false);
@@ -65,16 +60,14 @@ int main() {
 
 	// Create instance of the TcpServer
 	std::unique_ptr<TcpServer> server(new TcpServer);
-	//server = std::unique_ptr<TcpServer>(new TcpServer);
 	// Initialize server signal handlers
 	TcpServer::InitServerSignalHandlers(SignalHandlerManager::GetInstance());
 	// Create server arguments
 	server_args_t serverArg = {server.get(), ServerComm, nullptr};
 
 
-	// Initialize of HW Monitor
+	// Initialize HW Monitor signal handlers
 	HwMonitor::InitHwMonitorSignalHandlers(SignalHandlerManager::GetInstance());
-
 
 
 	// Runs HW Monitor
