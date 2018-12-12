@@ -3,7 +3,7 @@
  	\file		main.cpp
 
  	\brief		Application of TCP server which
- 				react on two commands
+ 				accepts two commands - mem, cpu
 
 	\date		25.10.2018
 	\version	1.0

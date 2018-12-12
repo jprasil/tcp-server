@@ -2,9 +2,9 @@
 /*
  	\file		daemon.h
 
- 	\brief		Daemon module which launch functor.
- 				Functor is passed as argument of
- 				member function DaemonStart().
+ 	\brief		Daemon module
+ 				Calling DaemonStart() function ensure
+ 				that program will run as daemon
 
 	\date		25.10.2018
 	\version	1.0
@@ -24,32 +24,25 @@
 class Daemon
 {
 public:
-//	using run_t = void* (*)(void* _arg);			//!< Type declaration of functor
-
-	static void InitDaemonSignalHandlers(SignalHandlerManager* _sigMng);
-	static Daemon* GetInstance()				//!< Function gets instance of Daemon
+	static void InitDaemonSignalHandlers(SignalHandlerManager* _sigMng);	//!< Function initialize signal handlers
+	static Daemon* GetInstance()											//!< Function gets instance of Daemon
 	{
-		static Daemon instance;
+		static Daemon instance;						//!< Instance of daemon
 		return &instance;
 	}
 
 private:
-	static void SigTermHandler(int _sig);
-	static void SigHupHandler(int _sig);
+	static void SigTermHandler(int _sig);			//!< SIGTERM handler
+	static void SigHupHandler(int _sig);			//!< SIGHUB handler
 
-//	static int DummyRun(void* _arg){return 0;}		//!< Definice defaultniho funktoru
-
-	explicit Daemon(){}								//!< Konstruktor
-	int RedirectStandardStreams();					//!< Funkce presmeruje standardni I/O
-	void PrintProcessInfo(const char* _procName);	//!< Vypise info o procesu
+	explicit Daemon(){}								//!< Constructor
+	int RedirectStandardStreams();					//!< Function redirects standard I/O
+	void PrintProcessInfo(const char* _procName);	//!< Function prints informations about process
 
 public:
-	Daemon(Daemon&)				= delete;				//!< Odstraneni kopirovaciho konstruktoru
-	void operator=(Daemon&)		= delete;				//!< Odstraneni operatoru =
-	void DaemonStart(const bool _redirectIO);	//!< Start demona
-
-private:
-//	static SignalHandlerManager*	SigHandlerMngr;
+	Daemon(Daemon&)				= delete;			//!< Delete copy constructor
+	void operator=(Daemon&)		= delete;			//!< Delete operator =
+	void DaemonStart(const bool _redirectIO);		//!< Function starts program as daemon
 
 };
 

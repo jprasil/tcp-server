@@ -2,9 +2,9 @@
 /*
  	\file		daemon.cpp
 
- 	\brief		Daemon module which launch functor.
- 				Functor is passed as argument of
- 				member function DaemonStart().
+ 	\brief		Daemon module
+ 				Calling DaemonStart() function ensure
+ 				that program will run as daemon
 
 	\date		25.10.2018
 	\version	1.0
@@ -32,11 +32,14 @@
 using namespace std;
 
 
-//SignalHandlerManager* Daemon::SigHandlerMngr = nullptr;
-
 
 //---------------------------------------------------
-//!	\note Definition of signal handler
+/*
+	\brief	Definition of signal handler functions
+
+	\param	_sig	Signal number
+*/
+//---------------------------------------------------
 //@{
 void Daemon::SigHupHandler(int _sig)
 {
