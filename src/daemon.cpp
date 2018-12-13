@@ -3,7 +3,7 @@
  	\file		daemon.cpp
 
  	\brief		Daemon module
- 				Calling DaemonStart() function ensure
+ 				Calling of DaemonStart() function ensure
  				that program will run as daemon
 
 	\date		25.10.2018
@@ -96,7 +96,14 @@ int Daemon::RedirectStandardStreams()
 void Daemon::PrintProcessInfo(const char* _procName)
 {
 #ifdef _DEBUG
-	DebugMessage("%s: PID=%d, SID=%d, PPID= %d",_procName, getpid(), getsid(getpid()), getppid());
+	if(_procName != nullptr)
+	{
+		DebugMessage("%s: PID=%d, SID=%d, PPID= %d",_procName, getpid(), getsid(getpid()), getppid());
+	}
+	else
+	{
+		DebugMessage("PID=%d, SID=%d, PPID= %d",getpid(), getsid(getpid()), getppid());
+	}
 #endif //_DEBUG
 }
 //---------------------------------------------------
@@ -109,7 +116,6 @@ void Daemon::PrintProcessInfo(const char* _procName)
 //---------------------------------------------------
 void Daemon::InitDaemonSignalHandlers(SignalHandlerManager* _sigMng)
 {
-//	SigHandlerMngr = _sigMng;
 	struct sigaction sa;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
@@ -123,10 +129,10 @@ void Daemon::InitDaemonSignalHandlers(SignalHandlerManager* _sigMng)
 }
 //---------------------------------------------------
 /*
-	\brief	Metoda vytvori demona, ktery spusti
-			predany funktor
+	\brief	Member function starts execution of program
+			as daemon
 
-	\param	_procName	Pojmenovani procesu
+	\param	_redirectIO	Redirection of standard I/O
 */
 //---------------------------------------------------
 void Daemon::DaemonStart(const bool _redirectIO)
@@ -182,13 +188,7 @@ void Daemon::DaemonStart(const bool _redirectIO)
 		}
 	}
 
-	// Launch functor
-//	void* ret = ((void*)0xFF);
-//	ret = _func(_args);
-
 	DebugMessage("Daemon is running now tid: %d", pthread_self());
-
-//	exit(EXIT_SUCCESS);
 }
 
 

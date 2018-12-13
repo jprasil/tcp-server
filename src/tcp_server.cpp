@@ -2,7 +2,10 @@
 /*
  	\file		tcp_server.cpp
 
- 	\brief		TCP server module -
+ 	\brief		TCP server module
+ 				Calling of function RunServer() starts
+ 				listening of server on given port and
+ 				IP address.
 
 	\date		29.10.2018
 	\version	1.0
@@ -28,21 +31,21 @@ using namespace std;
 //---------------------------------------------------
 //! Definition of private variables
 //@{
-int TcpServer::InstanceCnt = 0; 					//!< ID generator
-//SignalHandlerManager* TcpServer::SigHandlerMngr = nullptr;
-static map<pthread_t, TcpServer*> RunningServers;	//!< Register of running threads
+int TcpServer::InstanceCnt = 0; 					//!< Counter of server's instances (simultaneously it used for generating ID)
+static map<pthread_t, TcpServer*> RunningServers;	//!< List of running server's threads
 
 //@}
 
 
 //---------------------------------------------------
-//! Server mutex
+//! Server's mutex
 static pthread_mutex_t ServerMutex = PTHREAD_MUTEX_INITIALIZER;
 //---------------------------------------------------
 /*
-	\brief	Function for lock/unlock server mutex
+	\brief	Function for lock/unlock server's mutex
 */
 //---------------------------------------------------
+//@{
 #define ServerLock() \
 	do{ \
 		int ret = pthread_mutex_lock(&ServerMutex); \
@@ -59,24 +62,21 @@ static pthread_mutex_t ServerMutex = PTHREAD_MUTEX_INITIALIZER;
 			ErrorMessage("mutex_unlock() ServerMutex error: %s line: %d", strerror(ret), __LINE__); \
 	}while(0)
 
-//---------------------------------------------------
+//@}
 
 
 //---------------------------------------------------
 //! Definition of interval timer period [s]
-#define INTERVAL_TIMER_PERIOD		20 //[s]
-//---------------------------------------------------
-//! Definition of own signal
-//#define SIGFREE SIGRTMIN
+#define INTERVAL_TIMER_PERIOD		2 //[s]
 
 //---------------------------------------------------
-//! Private arguments
+//! Private arguments passed to the thread which processing client's request
 struct client_thread_args
 {
-	TcpServer						*ptrServer;
-	int								clientDesc;		//!< Client socket descriptor
-	TcpServer::client_rq_routine	rqRoutine;
-	void* 							args;			//!< Arguments for rqRoutine
+	TcpServer						*ptrServer;		//!< Pointer to instance of server
+	int								clientDesc;		//!< Client's socket descriptor
+	TcpServer::client_rq_routine	rqRoutine;		//!< Pointer to function processing client's request
+	void* 							args;			//!< Pointer to arguments for rqRoutine
 };
 
 
@@ -87,7 +87,7 @@ struct client_thread_args
 
 	\param	_addr		Server's IP address
 			_port		Server's port
-			_maxPendig	Maximum pending connections
+			_maxPendig	Maximum of pending connections
 
 */
 //---------------------------------------------------
@@ -164,10 +164,16 @@ void TcpServer::SetSocketPort(const char* _port)
 {
 	SocketAddr.sin_port = htons(atoi(_port));
 }
+//---------------------------------------------------
+/*
+	\brief	Function which initialize signal's handlers
+			and register them into the SignalHandlerManager
 
+	\param	_sigMng	Pointer to SignalHandlerManager
+*/
+//---------------------------------------------------
 void TcpServer::InitServerSignalHandlers(SignalHandlerManager* _sigMng)
 {
-//	SigHandlerMngr = _sigMng;
 	pthread_t tid = pthread_self();
 	struct sigaction sa;
 
@@ -184,7 +190,14 @@ void TcpServer::InitServerSignalHandlers(SignalHandlerManager* _sigMng)
 	sa.sa_handler = SigAlrmHandler;
 	_sigMng->AddSignalHandler(SIGALRM, sa);
 }
+//---------------------------------------------------
+/*
+	\brief	Definition of signal handler functions
 
+	\param	_sig	Signal number
+*/
+//---------------------------------------------------
+//@{
 void TcpServer::SigAlrmHandler(int _sig)
 {
 	pthread_t tid = pthread_self();
@@ -236,8 +249,9 @@ void TcpServer::SigTermHandler(int _sig)
 		{
 			DebugMessage("Terminate server ID: %d, tid: %d from thread: %d", it.second->ServerID, it.first, tid);
 			it.second->Running = false;
-			RunningServers.erase(it.first);
-			pthread_kill(it.first, _sig);
+			pthread_t tKill = it.first;
+			RunningServers.erase(tKill);
+			pthread_kill(tKill, _sig);
 		}
 		else
 		{
@@ -246,13 +260,16 @@ void TcpServer::SigTermHandler(int _sig)
 	}
 
 }
+//@}
+
 //---------------------------------------------------
 /*
 	\brief	Function runs tcp server
 
-	\param	_s_args	Pointer to TcpServer attributes
+	\param	_s_args	Pointer to "server_args_t" attribute
 
-	\return
+	\return	Server's return value
+			(TCP_SERVER_SUCCESS or TCP_SERVER_ERROR)
 */
 //---------------------------------------------------
 void* TcpServer::RunServer(void* _s_args)
@@ -266,7 +283,7 @@ void* TcpServer::RunServer(void* _s_args)
 	{
 		// No arguments passed to the server
 		ErrorMessage("No arguments for server tid: %d", tid);
-		pthread_exit(TCP_SERVER_ERROR);
+		return TCP_SERVER_ERROR;
 	}
 
 	// Get server's arguments
@@ -281,7 +298,7 @@ void* TcpServer::RunServer(void* _s_args)
 	{
 		DebugMessage("Server can't be registered tid: %d, id: %d", tid, server->ServerID);
 		ServerUnlock();
-		pthread_exit(TCP_SERVER_ERROR);
+		return TCP_SERVER_ERROR;
 	}
 
 	ServerUnlock();
@@ -378,6 +395,7 @@ void* TcpServer::RunServer(void* _s_args)
 
 	// Finish all child threads
 
+	// Lock thread pool
 	result = pthread_mutex_lock(&server->PoolLock);
 	if(result != 0)
 		ErrorMessage("mutex_lock() PoolLock error: %s line: %d", strerror(result), __LINE__);
@@ -391,6 +409,7 @@ void* TcpServer::RunServer(void* _s_args)
 		pthread_cancel(i.first);
 	}
 
+	// Unlock thread pool
 	result = pthread_mutex_unlock(&server->PoolLock);
 	if(result != 0)
 		ErrorMessage("mutex_unlock() PoolLock error: %s line: %d", strerror(result), __LINE__);
@@ -418,9 +437,20 @@ void* TcpServer::RunServer(void* _s_args)
 	pthread_attr_destroy(&attr);
 	sem_destroy(&server->Semaphore);
 
-	pthread_exit(TCP_SERVER_SUCCESS);
+	return TCP_SERVER_SUCCESS;
 }
+//---------------------------------------------------
+/*
+	\brief	Function call a request function (rqRoutine)
+			passed through parameter _args.
 
+	\note	This one runs in a separated thread
+
+	\param	_args	Pointer to "client_thread_args_t" attribute
+
+	\return	Thread's return value
+*/
+//---------------------------------------------------
 void* TcpServer::ProcessClientRequest(void* _args)
 {
 	int result = 0;
@@ -464,7 +494,6 @@ void* TcpServer::ProcessClientRequest(void* _args)
 			ErrorMessage("sem_post() error: %s", strerror(errno));
 		}
 	}
-
 
 	pthread_exit(0);
 }

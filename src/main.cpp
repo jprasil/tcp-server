@@ -52,7 +52,7 @@ int main()
 	DebugMessage("Main thread tid: %d", pthread_self());
 
 
-	// Initialize daemon signal handlers
+	// Initialize signal handlers for daemon
 	Daemon::InitDaemonSignalHandlers(SignalHandlerManager::GetInstance());
 	// Runs the program as daemon
 	Daemon::GetInstance()->DaemonStart(false);
@@ -60,13 +60,13 @@ int main()
 
 	// Create instance of the TcpServer
 	std::unique_ptr<TcpServer> server(new TcpServer);
-	// Initialize server signal handlers
+	// Initialize signal handlers for server
 	TcpServer::InitServerSignalHandlers(SignalHandlerManager::GetInstance());
-	// Create server arguments
+	// Create server's arguments
 	server_args_t serverArg = {server.get(), ServerComm, nullptr};
 
 
-	// Initialize HW Monitor signal handlers
+	// Initialize signal handlers for HW Monitor
 	HwMonitor::InitHwMonitorSignalHandlers(SignalHandlerManager::GetInstance());
 
 
@@ -74,8 +74,6 @@ int main()
 	HwMonitor::GetInstance()->StartHwMonitor();
 	// Runs server
 	TcpServer::RunServer(&serverArg);
-
-
 
 	return 0;
 }

@@ -3,7 +3,7 @@
  	\file		daemon.h
 
  	\brief		Daemon module
- 				Calling DaemonStart() function ensure
+ 				Calling of DaemonStart() function ensure
  				that program will run as daemon
 
 	\date		25.10.2018
@@ -42,7 +42,7 @@ private:
 public:
 	Daemon(Daemon&)				= delete;			//!< Delete copy constructor
 	void operator=(Daemon&)		= delete;			//!< Delete operator =
-	void DaemonStart(const bool _redirectIO);		//!< Function starts program as daemon
+	void DaemonStart(const bool _redirectIO=true);		//!< Function starts program as daemon
 
 };
 
