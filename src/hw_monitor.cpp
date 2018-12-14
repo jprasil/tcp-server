@@ -1,9 +1,19 @@
+//---------------------------------------------------
 /*
- * hw_monitor.cpp
- *
- *  Created on: Oct 26, 2018
- *      Author: root
- */
+ 	\file		hw_monitor.cpp
+
+ 	\brief		HW monitor module
+ 				Calling of function StartHwMonitor()
+ 				starts periodic monitoring of cpu
+ 				utilization and	mem usage.
+ 				(It execution in separate thread)
+
+	\date		26.10.2018
+	\version	1.0
+
+	\author		Bc. Jan Prasil
+*/
+//---------------------------------------------------
 
 
 #include "hw_monitor.h"

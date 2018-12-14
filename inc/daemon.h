@@ -20,7 +20,7 @@
 #include "signal_manager.h"
 
 //---------------------------------------------------
-//! Daemon class which is implemented as Singleton
+//! Daemon class implemented as singleton
 class Daemon
 {
 public:
