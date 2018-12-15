@@ -192,12 +192,11 @@ void TcpServer::InitServerSignalHandlers(SignalHandlerManager* _sigMng)
 }
 //---------------------------------------------------
 /*
-	\brief	Definition of signal handler functions
+	\brief	Signal handler for signal SIGALRM
 
 	\param	_sig	Signal number
 */
 //---------------------------------------------------
-//@{
 void TcpServer::SigAlrmHandler(int _sig)
 {
 	pthread_t tid = pthread_self();
@@ -214,7 +213,13 @@ void TcpServer::SigAlrmHandler(int _sig)
 	}
 
 }
+//---------------------------------------------------
+/*
+	\brief	Signal handler for signal SIGINT
 
+	\param	_sig	Signal number
+*/
+//---------------------------------------------------
 void TcpServer::SigIntHandler(int _sig)
 {
 	pthread_t tid = pthread_self();
@@ -237,7 +242,13 @@ void TcpServer::SigIntHandler(int _sig)
 	}
 
 }
+//---------------------------------------------------
+/*
+	\brief	Signal handler for signal SIGTERM
 
+	\param	_sig	Signal number
+*/
+//---------------------------------------------------
 void TcpServer::SigTermHandler(int _sig)
 {
 	pthread_t tid = pthread_self();

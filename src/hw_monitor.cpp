@@ -30,7 +30,7 @@
 
 //---------------------------------------------------
 /*
-	\brief	Function which initialize signal's handlers
+	\brief	Function which initialize signal handlers
 			and register them into the SignalHandlerManager
 
 	\param	_sigMng	Pointer to SignalHandlerManager
@@ -50,6 +50,13 @@ void HwMonitor::InitHwMonitorSignalHandlers(SignalHandlerManager* _sigMng)
 	_sigMng->AddSignalHandler(SIGINT, sa);
 }
 
+//---------------------------------------------------
+/*
+	\brief	Signal handler for signal SIGTERM
+
+	\param	_sig	Signal number
+*/
+//---------------------------------------------------
 void HwMonitor::SigTermHandler(int _sig)
 {
 	pthread_t tid = pthread_self();
@@ -69,7 +76,11 @@ void HwMonitor::SigTermHandler(int _sig)
 		pthread_mutex_unlock(&monitor->Lock);
 	}
 }
-
+//---------------------------------------------------
+/*
+	\brief	Constructor
+*/
+//---------------------------------------------------
 HwMonitor::HwMonitor() :
 	Running(false),
 	CpuUtilization(0),
@@ -78,13 +89,22 @@ HwMonitor::HwMonitor() :
 {
 	Lock = PTHREAD_MUTEX_INITIALIZER;
 }
-
+//---------------------------------------------------
+/*
+	\brief	Destructor
+*/
+//---------------------------------------------------
 HwMonitor::~HwMonitor()
 {
 	if(TID)
 		pthread_cancel(TID);
 }
-
+//---------------------------------------------------
+/*
+	\brief	Start RunMonitor() in separate
+			thread
+*/
+//---------------------------------------------------
 void HwMonitor::StartHwMonitor()
 {
 	pthread_mutex_lock(&Lock);
@@ -97,12 +117,20 @@ void HwMonitor::StartHwMonitor()
 
 	pthread_mutex_unlock(&Lock);
 }
-
+//---------------------------------------------------
+/*
+	\brief	Stop HW monitor and terminate thread
+*/
+//---------------------------------------------------
 void HwMonitor::StopHwMonitor()
 {
 	Running = false;
 }
-
+//---------------------------------------------------
+/*
+	\brief	Finds out HW resources
+*/
+//---------------------------------------------------
 void* HwMonitor::RunMonitor(void* _args)
 {
 	cpupct_t a[4], b[4];
@@ -180,7 +208,12 @@ void* HwMonitor::RunMonitor(void* _args)
 	return EXIT_SUCCESS;
 }
 
-
+//---------------------------------------------------
+/*
+	\brief	Getters
+*/
+//---------------------------------------------------
+//@{
 auto HwMonitor::GetCpuUtilization() -> cpupct_t
 {
 	return CpuUtilization;
@@ -195,3 +228,4 @@ pthread_t HwMonitor::GetTID()
 {
 	return TID;
 }
+//@}

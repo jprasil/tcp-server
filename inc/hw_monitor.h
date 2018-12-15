@@ -38,29 +38,33 @@ public:
 		return &instance;
 	}
 
-	void StartHwMonitor();								//!<
-	void StopHwMonitor();
-	~HwMonitor();
+	void StartHwMonitor();								//!< Start HW monitor in separate thread
+	void StopHwMonitor();								//!< Stop HW monitor
+	~HwMonitor();										//!< Desctructor
+	//-------------------------------------
+	//!	Getters
+	//@{
 	auto GetCpuUtilization() -> cpupct_t;
 	auto GetMemUsage() -> memusg_t;
 	pthread_t GetTID();
+	//@}
 
-	HwMonitor(HwMonitor&)		= delete;
-	void operator=(HwMonitor&)	= delete;
+	HwMonitor(HwMonitor&)		= delete;				//!< Delete constructor
+	void operator=(HwMonitor&)	= delete;				//!< Delete operator =
 
-
-private:
-	static void* RunMonitor(void* _args);
-	static void SigTermHandler(int _sig);
-	static void SigIntHandler(int _sig);
-	HwMonitor();
 
 private:
-	bool			Running;
-	cpupct_t		CpuUtilization;
-	memusg_t		MemUsage;
-	pthread_mutex_t	Lock;
-	pthread_t		TID;
+	static void* RunMonitor(void* _args);				//!< Function finds out HW resources
+	static void SigTermHandler(int _sig);				//!< SIGTERM handler
+	static void SigIntHandler(int _sig);				//!< SIGINT handler
+	HwMonitor();										//!< Constructor
+
+private:
+	bool			Running;					//!< Running flag
+	cpupct_t		CpuUtilization;				//!< CPU utilization [%]
+	memusg_t		MemUsage;					//!< Memory usage [kb]
+	pthread_mutex_t	Lock;						//!< Mutex
+	pthread_t		TID;						//!< Thread ID
 };
 
 #endif /* INC_HW_MONITOR_H_ */
