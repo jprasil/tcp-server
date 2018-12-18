@@ -1,9 +1,17 @@
+//---------------------------------------------------
 /*
- * pit.cpp
- *
- *  Created on: 16. 11. 2018
- *      Author: root
- */
+ 	\file		pit.cpp
+
+ 	\brief		Periodic Interval Timer module
+ 				This module ensures periodic interrupts
+ 				of process by SIGALRM signal.
+
+	\date		16.11.2018
+	\version	1.0
+
+	\author		Bc. Jan Prasil
+*/
+//---------------------------------------------------
 
 #include "pit.h"
 #include "help.h"
@@ -13,9 +21,16 @@
 
 static itimerval PIT = {{0,0},{0,0}};
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+//static pthread_mutex_t mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
+//---------------------------------------------------
+/*
+ 	\brief	Function activates PIT on given period
 
-
+ 	\param	_sec	Period [s]
+ 			_usec	Period [us]
+*/
+//---------------------------------------------------
 void pit::SetPIT(__time_t _sec, __suseconds_t _usec)
 {
 	itimerval IntTimer;
