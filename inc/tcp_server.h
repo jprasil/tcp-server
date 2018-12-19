@@ -71,7 +71,7 @@ private:
 	thread_pool_t			ThreadPool;			//!< Pool of threads which processing client's requests
 	pthread_mutex_t			PoolLock;			//!< Mutex protect an access to ThreadPool
 	sem_t					Semaphore;			//!< Semaphore protect the server from overloading
-	int						ServerID;			//!< server's ID
+	int						ServerID;			//!< Server's ID
 	static int				InstanceCnt;		//!< Counter of server's instances (simultaneously it used for generating ID)
 };
 

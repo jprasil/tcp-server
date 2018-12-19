@@ -31,6 +31,8 @@ enum Cmd
 
 int ServerComm(int _socket, void* _comm);
 
+int ClientComm(int _socket, char* _buff);
+
 /*class Comm
 {
 

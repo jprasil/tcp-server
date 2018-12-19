@@ -29,11 +29,11 @@ int ServerComm(int _socket, void* _comm)
 {
 //	Comm *comm = reinterpret_cast<Comm*>(_comm);
 	int len;
-	char recvBuff[BUFF_SIZE+1];
-	char sendBuff[BUFF_SIZE+1];
+	char recvBuff[BUFF_SIZE];
+	char sendBuff[BUFF_SIZE];
 	int sendBuffLen = 0;
 
-	len = recv(_socket, (void*)&recvBuff, BUFF_SIZE, 0);
+	len = recv(_socket, (void*)&recvBuff, (BUFF_SIZE - 1), 0);
 //	strcpy(recvBuff,"\nasdfr fgt mem\ndfde cpu cpucpu\n");
 	len = strlen(recvBuff);
 
@@ -56,7 +56,7 @@ int ServerComm(int _socket, void* _comm)
 					sprintf(tmpBuff, "%.2Lf", cpuUtil);
 					strcat(tmpBuff, " [%]\n");
 					size_t tmpLen = strlen(tmpBuff);
-					if((tmpLen + sendBuffLen) <= BUFF_SIZE)
+					if((tmpLen + sendBuffLen) <= (BUFF_SIZE - 1))
 					{
 						sendBuffLen += tmpLen;
 						strcat(sendBuff, tmpBuff);
@@ -69,7 +69,7 @@ int ServerComm(int _socket, void* _comm)
 					sprintf(tmpBuff, "%u", memUsg);
 					strcat(tmpBuff, " [kB]\n");
 					size_t tmpLen = strlen(tmpBuff);
-					if((tmpLen + sendBuffLen) <= BUFF_SIZE)
+					if((tmpLen + sendBuffLen) <= (BUFF_SIZE - 1))
 					{
 						sendBuffLen += tmpLen;
 						strcat(sendBuff, tmpBuff);
@@ -103,53 +103,4 @@ int ServerComm(int _socket, void* _comm)
 	return 0;
 }
 
-int ClientComm(int _socket, char* _buff)
-{
-	bool running = true;
-	int retval = 0;
 
-	if(strcmp(_buff, &cmd[Cmd::CPU_UTILIZATION][0]) != 0 &&
-			strcmp(_buff, &cmd[Cmd::MEM_USAGE][0]) != 0)
-	{
-		ErrorMessage("Invalid request command: %s", _buff);
-	}
-	else
-	{
-		// Prepare request
-		size_t len = strlen(_buff);
-		_buff[len++] = '\n';
-		_buff[len] = 0;
-
-		int attempts = 10;
-		while(running && attempts)
-		{
-			// Send request
-			len = send(_socket, _buff, len, 0);
-
-			if(len == -1)
-			{
-				attempts--;
-				ErrorMessage("send() error: %s", strerror(errno));
-			}
-			else
-			{
-				DebugMessage("It was send %d bytes, waiting for receive", len);
-				len = recv(_socket, _buff, (BUFF_SIZE - 1), 0);
-				_buff[len] = 0;
-
-				if(len == -1)
-				{
-					HandleError("recv() error");
-				}
-				else
-				{
-					DebugMessage("Receive complete, data: %s length: %d", _buff, len);
-					retval += len;
-					running = false;
-				}
-			}
-		}
-	}
-
-	return retval;
-}

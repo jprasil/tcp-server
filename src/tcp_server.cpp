@@ -24,6 +24,7 @@
 #include <cstring>
 #include <fcntl.h>
 
+
 using namespace std;
 
 
@@ -95,6 +96,7 @@ TcpServer::TcpServer(in_addr_t _addr, in_port_t _port, int _maxPending) :
 		TcpSocket(-1),
 		MaxPending(_maxPending),
 		Running(true),
+		MaxThreads(false),
 		ServerID(InstanceCnt)
 {
 	InstanceCnt++;
@@ -111,8 +113,9 @@ TcpServer::~TcpServer()
 	if(fcntl(TcpSocket, F_GETFD) != -1 || errno != EBADF)
 	{
 		if(close(TcpSocket) == -1)
-			HandleError("Error during socket closing");
+			ErrorMessage("Error during socket closing: %s", strerror(errno));
 	}
+
 }
 
 //---------------------------------------------------
@@ -343,6 +346,7 @@ void* TcpServer::RunServer(void* _s_args)
 	pit::SetPIT(INTERVAL_TIMER_PERIOD, 0);
 
 	int client, result;
+	bool maxThreads = false;
 	sockaddr_in clientAddr;
 	socklen_t	clientAddrLen = sizeof(clientAddr);
 	pthread_attr_t attr;
@@ -354,7 +358,7 @@ void* TcpServer::RunServer(void* _s_args)
 		HandleError_ErrNum(result, "pthread_attr_init() error: %d");
 	}
 
-	// Semaphore initializing
+	// Semaphore initialize
 	if(sem_init(&server->Semaphore, 0 /*thread-shared*/, server->MaxPending) == -1)
 	{
 		HandleError("sem_init() error");
@@ -362,7 +366,16 @@ void* TcpServer::RunServer(void* _s_args)
 
 	while(server->Running)
 	{
-		client = accept(server->TcpSocket, reinterpret_cast<sockaddr*>(&clientAddr), &clientAddrLen);
+		// Check pending request
+		if(!maxThreads)
+		{
+			// Accept an incoming request
+			client = accept(server->TcpSocket, reinterpret_cast<sockaddr*>(&clientAddr), &clientAddrLen);
+		}
+		else
+		{
+			maxThreads = false;
+		}
 
 		// Test client descriptor
 		if(client == -1)
@@ -374,10 +387,10 @@ void* TcpServer::RunServer(void* _s_args)
 			// Try to acquire semaphore
 			if(sem_wait(&server->Semaphore) == -1)
 			{
+				maxThreads = true;
 				ErrorMessage("sem_wait() error: %s", strerror(errno));
 			}
-
-			if(serverAttr->rqRoutine != nullptr)
+			else if(serverAttr->rqRoutine != nullptr)
 			{
 				pthread_t ID;
 				auto tArgs = unique_ptr<client_thread_args_t>(new client_thread_args_t({server, client, serverAttr->rqRoutine, serverAttr->rqRoutineArgs}));
@@ -481,6 +494,12 @@ void* TcpServer::ProcessClientRequest(void* _args)
 		if(result)
 		{
 			ErrorMessage("Processing of client request failure with code: %d", result);
+		}
+
+		if(fcntl(args->clientDesc, F_GETFD) != -1 || errno != EBADF)
+		{
+			if(close(args->clientDesc) == -1)
+			DebugMessage("Error during client-socket closing: %s", strerror(errno));
 		}
 
 		// Disable cancellation of thread
