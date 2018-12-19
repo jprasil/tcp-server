@@ -6,7 +6,7 @@
  				Calling of function StartHwMonitor()
  				starts periodic monitoring of cpu
  				utilization and	mem usage.
- 				(It execution in separate thread)
+ 				(It executes in separate thread)
 
 	\date		26.10.2018
 	\version	1.0
@@ -38,7 +38,6 @@
 //---------------------------------------------------
 void HwMonitor::InitHwMonitorSignalHandlers(SignalHandlerManager* _sigMng)
 {
-//	SigHandlerMngr = _sigMng;
 	struct sigaction sa;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
@@ -64,17 +63,7 @@ void HwMonitor::SigTermHandler(int _sig)
 
 	DebugMessage("HwMonitor SigTerm() called from thread tid: %d", tid);
 
-//	if(tid == monitor->GetTID())
-	if(tid == monitor->TID)
-	{
-		monitor->StopHwMonitor();
-	}
-	else
-	{
-		pthread_mutex_lock(&monitor->Lock);
-		monitor->StopHwMonitor();
-		pthread_mutex_unlock(&monitor->Lock);
-	}
+	monitor->StopHwMonitor();
 }
 //---------------------------------------------------
 /*
@@ -101,14 +90,14 @@ HwMonitor::~HwMonitor()
 }
 //---------------------------------------------------
 /*
-	\brief	Start RunMonitor() in separate
-			thread
+	\brief	Start RunMonitor() in separate thread
 */
 //---------------------------------------------------
 void HwMonitor::StartHwMonitor()
 {
 	pthread_mutex_lock(&Lock);
 
+	// Check whether HW monitor is running
 	if(!Running)
 	{
 		int res = pthread_create(&TID, nullptr, RunMonitor, nullptr);
@@ -124,7 +113,20 @@ void HwMonitor::StartHwMonitor()
 //---------------------------------------------------
 void HwMonitor::StopHwMonitor()
 {
-	Running = false;
+	pthread_t tid = pthread_self();
+	HwMonitor *monitor = HwMonitor::GetInstance();
+
+	//
+	if(tid == monitor->TID)
+	{
+		Running = false;
+	}
+	else
+	{
+		pthread_mutex_lock(&monitor->Lock);
+		Running = false;
+		pthread_mutex_unlock(&monitor->Lock);
+	}
 }
 //---------------------------------------------------
 /*

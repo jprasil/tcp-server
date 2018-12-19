@@ -6,7 +6,7 @@
  				Calling of function StartHwMonitor()
  				starts periodic monitoring of cpu
  				utilization and	mem usage.
- 				(It execution in separate thread)
+ 				(It executes in separate thread)
 
 	\date		26.10.2018
 	\version	1.0
