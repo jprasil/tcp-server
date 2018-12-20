@@ -394,7 +394,7 @@ void* TcpServer::RunServer(void* _s_args)
 			else if(serverAttr->rqRoutine != nullptr)
 			{
 				pthread_t ID;
-				// Create arguments for thread which execute request function
+				// Create arguments for thread which executes request function
 				auto tArgs = unique_ptr<client_thread_args_t>(new client_thread_args_t({server, client, serverAttr->rqRoutine, serverAttr->rqRoutineArgs}));
 
 				result = pthread_mutex_lock(&server->PoolLock);
@@ -426,7 +426,7 @@ void* TcpServer::RunServer(void* _s_args)
 	if(result != 0)
 		ErrorMessage("mutex_lock() PoolLock error: %s line: %d", strerror(result), __LINE__);
 	// All threads in the ThreadPool are running or blocked now
-	// Vector of registered threads's ID
+	// Vector for threads's ID that has been registered in the pool yet
 	vector<pthread_t> threadsID;
 	// Send cancel request all of them
 	for(auto &i: server->ThreadPool)
@@ -488,8 +488,10 @@ void* TcpServer::ProcessClientRequest(void* _args)
 		// Thread cancellation enabled
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
 
+		// Process client's request
 		if(args->rqRoutine != nullptr)
 		{
+
 			result = args->rqRoutine(args->clientDesc, args->args);
 		}
 
@@ -498,10 +500,11 @@ void* TcpServer::ProcessClientRequest(void* _args)
 			ErrorMessage("Processing of client request failure with code: %d", result);
 		}
 
+		// Close client's socket descriptor
 		if(fcntl(args->clientDesc, F_GETFD) != -1 || errno != EBADF)
 		{
 			if(close(args->clientDesc) == -1)
-			DebugMessage("Error during client-socket closing: %s", strerror(errno));
+				DebugMessage("Error during client-socket closing: %s", strerror(errno));
 		}
 
 		// Thread cancellation disable
