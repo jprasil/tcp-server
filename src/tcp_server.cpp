@@ -96,7 +96,6 @@ TcpServer::TcpServer(in_addr_t _addr, in_port_t _port, int _maxPending) :
 		TcpSocket(-1),
 		MaxPending(_maxPending),
 		Running(true),
-		MaxThreads(false),
 		ServerID(InstanceCnt)
 {
 	InstanceCnt++;
@@ -304,7 +303,7 @@ void* TcpServer::RunServer(void* _s_args)
 	serverAttr = reinterpret_cast<server_args_t*>(_s_args);
 	TcpServer* server = serverAttr->ptrServer;
 
-	// Register server thread
+	// Register pair <thread_id; pointer_to_server> (must be thread-safety)
 	ServerLock();
 
 	auto ret = RunningServers.insert(pair<pthread_t, TcpServer*>(tid, server));
@@ -317,7 +316,7 @@ void* TcpServer::RunServer(void* _s_args)
 
 	ServerUnlock();
 
-	// Creating of socket based on TCP/IP protocol
+	// Creates a socket based on TCP/IP protocol
 	server->TcpSocket = socket(AF_INET, SOCK_STREAM /*| SOCK_NONBLOCK*/, IPPROTO_TCP);
 	if(server->TcpSocket == -1)
 	{
@@ -330,19 +329,19 @@ void* TcpServer::RunServer(void* _s_args)
 		HandleError("setsockopt() error");
 	}
 
-	// Assigning of address and port to the socket
+	// Assign address and port to the socket
 	if(bind(server->TcpSocket, reinterpret_cast<sockaddr*>(&server->SocketAddr), sizeof(SocketAddr)) == -1)
 	{
 		HandleError("bind() error");
 	}
 
-	// Accepting incoming connections
+	// Enables the socket to accept connections
 	if(listen(server->TcpSocket, server->MaxPending) == -1)
 	{
 		HandleError("listen() error");
 	}
 
-	// Set interval timer which generated interrupt system call
+	// Set periodic interval timer (generates interrupt system call)
 	pit::SetPIT(INTERVAL_TIMER_PERIOD, 0);
 
 	int client, result;
@@ -364,6 +363,7 @@ void* TcpServer::RunServer(void* _s_args)
 		HandleError("sem_init() error");
 	}
 
+	// Loop
 	while(server->Running)
 	{
 		// Check pending request
@@ -387,12 +387,14 @@ void* TcpServer::RunServer(void* _s_args)
 			// Try to acquire semaphore
 			if(sem_wait(&server->Semaphore) == -1)
 			{
+				// It has been allocated maximum available threads
 				maxThreads = true;
 				ErrorMessage("sem_wait() error: %s", strerror(errno));
 			}
 			else if(serverAttr->rqRoutine != nullptr)
 			{
 				pthread_t ID;
+				// Create arguments for thread which execute request function
 				auto tArgs = unique_ptr<client_thread_args_t>(new client_thread_args_t({server, client, serverAttr->rqRoutine, serverAttr->rqRoutineArgs}));
 
 				result = pthread_mutex_lock(&server->PoolLock);
@@ -465,10 +467,10 @@ void* TcpServer::RunServer(void* _s_args)
 }
 //---------------------------------------------------
 /*
-	\brief	Function call a request function (rqRoutine)
+	\brief	Function calls a request function (rqRoutine)
 			passed through parameter _args.
 
-	\note	This one runs in a separated thread
+	\note	It runs in a separated thread
 
 	\param	_args	Pointer to "client_thread_args_t" attribute
 
@@ -483,7 +485,7 @@ void* TcpServer::ProcessClientRequest(void* _args)
 
 	if(server != nullptr)
 	{
-		// Enable cancellation of thread
+		// Thread cancellation enabled
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
 
 		if(args->rqRoutine != nullptr)
@@ -502,7 +504,7 @@ void* TcpServer::ProcessClientRequest(void* _args)
 			DebugMessage("Error during client-socket closing: %s", strerror(errno));
 		}
 
-		// Disable cancellation of thread
+		// Thread cancellation disable
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
 
 		// Unregister thread

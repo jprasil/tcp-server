@@ -49,7 +49,7 @@ public:
 	pthread_t GetTID();
 	//@}
 
-	HwMonitor(HwMonitor&)		= delete;				//!< Delete constructor
+	HwMonitor(HwMonitor&)		= delete;				//!< Delete copy constructor
 	void operator=(HwMonitor&)	= delete;				//!< Delete operator =
 
 

@@ -90,7 +90,7 @@ HwMonitor::~HwMonitor()
 }
 //---------------------------------------------------
 /*
-	\brief	Start RunMonitor() in separate thread
+	\brief	Starts RunMonitor() in separate thread
 */
 //---------------------------------------------------
 void HwMonitor::StartHwMonitor()
@@ -116,7 +116,7 @@ void HwMonitor::StopHwMonitor()
 	pthread_t tid = pthread_self();
 	HwMonitor *monitor = HwMonitor::GetInstance();
 
-	//
+	// Mutex isn't recursive
 	if(tid == monitor->TID)
 	{
 		Running = false;
