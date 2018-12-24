@@ -70,9 +70,9 @@ int main()
 	HwMonitor::InitHwMonitorSignalHandlers(SignalHandlerManager::GetInstance());
 
 
-	// Runs HW Monitor
+	// Run HW Monitor
 	HwMonitor::GetInstance()->StartHwMonitor();
-	// Runs server
+	// Run server
 	TcpServer::RunServer(&serverArg);
 
 	return 0;

@@ -33,7 +33,7 @@
 
 //---------------------------------------------------
 /*
-	\brief	Function print message into the	standard
+	\brief	Function prints message into the standard
 			output	(stdout)
 
 	\param	_str	Message (may included string
@@ -44,7 +44,7 @@
 void DebugMessage(const char* _str, ...);
 //---------------------------------------------------
 /*
-	\brief	Function print message into the error
+	\brief	Function prints message into the error
 			output (stderr)
 
 	\param	_str	Message (may included string

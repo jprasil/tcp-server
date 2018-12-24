@@ -40,8 +40,10 @@ void pit::SetPIT(__time_t _sec, __suseconds_t _usec)
 
 	if(getitimer(ITIMER_REAL, &IntTimer) == 0)
 	{
+		// Timer is acquired successfully
 		if(IntTimer.it_interval.tv_sec == 0 && IntTimer.it_interval.tv_usec == 0)
 		{
+			// Attempt to arm timer
 			DebugMessage("Timer is disarmed, thread set the timer tid: %d", tid);
 			PIT.it_interval.tv_sec = _sec;
 			PIT.it_interval.tv_usec = _usec;
@@ -51,11 +53,13 @@ void pit::SetPIT(__time_t _sec, __suseconds_t _usec)
 		}
 		else
 		{
+			// Timer was already armed
 			DebugMessage("Timer is armed, time until next expiration sec:%d usec:%d tid:%d", IntTimer.it_value.tv_sec, IntTimer.it_value.tv_usec, tid);
 		}
 	}
 	else
 	{
+		// Timer error
 		ErrorMessage("getitimer() error: %s", strerror(errno));
 	}
 

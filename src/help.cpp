@@ -20,13 +20,10 @@
 
 
 
-
-
-
 //---------------------------------------------------
 /*
-	\brief	Printing message into the standard output
-			(stdout)
+	\brief	Function prints message into the standard
+			output	(stdout)
 
 	\param	_str	Message (may included string
 					arguments e.g. %s, %d, ..)
@@ -45,7 +42,16 @@ void DebugMessage(const char* _str, ...)
 	std::cout << text << std::endl;
 #endif //_DEBUG
 }
+//---------------------------------------------------
+/*
+	\brief	Function prints message into the error
+			output (stderr)
 
+	\param	_str	Message (may included string
+					arguments e.g. %s, %d, ..)
+			...		String argument's values
+*/
+//---------------------------------------------------
 void ErrorMessage(const char* _str, ...)
 {
 	va_list args;

@@ -1,10 +1,16 @@
+//---------------------------------------------------
 /*
- * comm_prot.h
- *
- *  Created on: Nov 17, 2018
- *      Author: root
- */
+ 	\file		comm.h
 
+ 	\brief		This module defines communication
+ 				messages based on TCP protocol
+
+	\date		25.10.2018
+	\version	1.0
+
+	\author		Bc. Jan Prasil
+*/
+//---------------------------------------------------
 #ifndef INC_COMM_H_
 #define INC_COMM_H_
 
@@ -29,30 +35,25 @@ enum Cmd
 	char			Data[MESSAGE_DATA_SIZE];
 };*/
 
-int ServerComm(int _socket, void* _comm);
 
-int ClientComm(int _socket, char* _buff);
+//---------------------------------------------------
+/*
+	\brief	Function process client's requests
 
-/*class Comm
-{
-
-using commfunc_t = ssize_t (*) (int _socket, void *_buffer, size_t _size, int _flags);
-
-
-public:
-	explicit Comm(commfunc_t _send, commfunc_t _recv);
-//	int Send();
-//	int Recv();
-
-
-private:
-	commfunc_t	Send;
-	commfunc_t	Recv;
-};
+	\param	_socket	Server's socket descriptor
+			_comm	Passed arguments
 */
+//---------------------------------------------------
+int ServerComm(int _socket, void* _comm);
+//---------------------------------------------------
+/*
+	\brief	Function send request to server
 
-
-
+	\param	_socket	Client's socket descriptor
+			_comm	Passed pointer to buffer
+*/
+//---------------------------------------------------
+int ClientComm(int _socket, char* _buff);
 
 
 

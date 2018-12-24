@@ -116,9 +116,10 @@ void HwMonitor::StopHwMonitor()
 	pthread_t tid = pthread_self();
 	HwMonitor *monitor = HwMonitor::GetInstance();
 
-	// Mutex isn't recursive
+	// Check calling thread
 	if(tid == monitor->TID)
 	{
+		// Mutex doesn't have to lock in the same thread
 		Running = false;
 	}
 	else
@@ -152,16 +153,17 @@ void* HwMonitor::RunMonitor(void* _args)
 		//! Measure processor utilization
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
 
+		// Read first sample
 		procstat = fopen("/proc/stat","r");
 		fscanf(procstat, "%*s %Lf %Lf %Lf %Lf", &a[0],&a[1],&a[2],&a[3]);
 		fclose(procstat);
 
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
-
+		// Wait
 		sleep(1);
 
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
-
+		// Read second sample
 		procstat = fopen("/proc/stat","r");
 		fscanf(procstat,"%*s %Lf %Lf %Lf %Lf",&b[0],&b[1],&b[2],&b[3]);
 		fclose(procstat);
@@ -175,7 +177,7 @@ void* HwMonitor::RunMonitor(void* _args)
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
 
 		procmeminfo.open("/proc/meminfo", std::ifstream::in);
-
+		// Read memory info (MemTotal, MemFree, Buffers, Cached)
 		int load = 0;
 		while(load < 4)
 		{
@@ -189,6 +191,7 @@ void* HwMonitor::RunMonitor(void* _args)
 
 			if(procmeminfo.eof())
 			{
+				// Read error
 				load = parseFail;
 			}
 		}
