@@ -1,9 +1,18 @@
+//---------------------------------------------------
 /*
- * comm.cpp
- *
- *  Created on: Nov 18, 2018
- *      Author: root
- */
+ 	\file		comm.cpp
+
+ 	\brief		This module defines communication
+ 				messages based on TCP protocol
+
+	\date		25.10.2018
+	\version	1.0
+
+	\author		Bc. Jan Prasil
+
+	\note		Implements ServerComm() only
+*/
+//---------------------------------------------------
 
 #include "comm.h"
 #include "hw_monitor.h"
@@ -13,28 +22,19 @@
 #include <cstring>
 #include <cerrno>
 #include <unistd.h>
-//#include <string>
 
-/*Comm::Comm(commfunc_t _send, commfunc_t _recv):
-		Send(_send),
-		Recv(_recv)
-{
 
-}
-*/
 
 const char *cmd[] = {"cpu", "mem"};
 
 int ServerComm(int _socket, void* _comm)
 {
-//	Comm *comm = reinterpret_cast<Comm*>(_comm);
 	int len;
 	char recvBuff[BUFF_SIZE];
 	char sendBuff[BUFF_SIZE];
 	int sendBuffLen = 0;
 
 	len = recv(_socket, (void*)&recvBuff, (BUFF_SIZE - 1), 0);
-//	strcpy(recvBuff,"\nasdfr fgt mem\ndfde cpu cpucpu\n");
 	len = strlen(recvBuff);
 
 	if(len >= 0)

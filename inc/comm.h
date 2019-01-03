@@ -28,17 +28,23 @@ enum Cmd
 
 
 
-/*struct Message
-{
-	Cmd ID;
-	size_t			DataSize;
-	char			Data[MESSAGE_DATA_SIZE];
-};*/
-
-
 //---------------------------------------------------
 /*
-	\brief	Function process client's requests
+	\brief	Communication messages (based on byte streams)
+	 	 	Client sends: [cmd]\n
+	 	 			cmd.........command, may be "cpu" or "mem"
+	 	 			\n..........identifier of end message
+
+	 	 	Server responds: val [unit]\n
+	 	 			val.........measured value
+	 	 			[unit]......unit of val
+	 	 			\n..........identifier of end message
+
+*/
+//@{
+//---------------------------------------------------
+/*
+	\brief	Function processes client's requests
 
 	\param	_socket	Server's socket descriptor
 			_comm	Passed arguments
@@ -47,14 +53,22 @@ enum Cmd
 int ServerComm(int _socket, void* _comm);
 //---------------------------------------------------
 /*
-	\brief	Function send request to server
+	\brief	Function sends request to server
 
 	\param	_socket	Client's socket descriptor
 			_comm	Passed pointer to buffer
 */
 //---------------------------------------------------
 int ClientComm(int _socket, char* _buff);
+//@}
 
-
-
+//---------------------------------------------------
+//! Todo
+/*struct Message
+{
+	Cmd 			ID;
+	size_t			DataSize;
+	char			Data[MESSAGE_DATA_SIZE];
+};
+*/
 #endif /* INC_COMM_H_ */
