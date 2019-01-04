@@ -155,7 +155,7 @@ void* HwMonitor::RunMonitor(void* _args)
 
 		// Read first sample
 		procstat = fopen("/proc/stat","r");
-		fscanf(procstat, "%*s %Lf %Lf %Lf %Lf", &a[0],&a[1],&a[2],&a[3]);
+		bool res = (fscanf(procstat, "%*s %Lf %Lf %Lf %Lf", &a[0],&a[1],&a[2],&a[3]) > 0) ? true : false;
 		fclose(procstat);
 
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
@@ -165,7 +165,7 @@ void* HwMonitor::RunMonitor(void* _args)
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
 		// Read second sample
 		procstat = fopen("/proc/stat","r");
-		fscanf(procstat,"%*s %Lf %Lf %Lf %Lf",&b[0],&b[1],&b[2],&b[3]);
+		res = res && (fscanf(procstat,"%*s %Lf %Lf %Lf %Lf",&b[0],&b[1],&b[2],&b[3]) > 0) ? true : false;
 		fclose(procstat);
 
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
