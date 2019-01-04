@@ -55,7 +55,11 @@ int main()
 	// Initialize signal handlers for daemon
 	Daemon::InitDaemonSignalHandlers(SignalHandlerManager::GetInstance());
 	// Runs the program as daemon
+#ifdef _DEBUG
+	Daemon::GetInstance()->DaemonStart(false);
+#else
 	Daemon::GetInstance()->DaemonStart(true);
+#endif //_DEBUG
 
 
 	// Create instance of the TcpServer
