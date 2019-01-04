@@ -35,9 +35,9 @@ enum Cmd
 	 	 			cmd.........command, may be "cpu" or "mem"
 	 	 			\n..........identifier of end message
 
-	 	 	Server responds: val [unit]\n
+	 	 	Server responds: val unit\n
 	 	 			val.........measured value
-	 	 			[unit]......unit of val
+	 	 			unit........unit of value
 	 	 			\n..........identifier of end message
 
 */
